@@ -10,6 +10,42 @@ const ENDPOINTS_REGIONALES = {
 // URL del Script conectado a Base_Central_Cuestionario_EOTS (para leer catálogo de folios)
 const URL_CATALOGO_CENTRAL = "https://script.google.com/macros/s/AKfycbyyzE4zDAMz4qWNUUxmFdLZ5zCZmdwFllKML-grfPTudWkDFTcttqPYJAn3aPsVarTR/exec";
 
+// FUNCIONES DE VENTANA MODAL PERSONALIZADA (Sin "Suprimir diálogos")
+function mostrarAlerta(mensaje) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('customModalOverlay');
+        document.getElementById('customModalMsg').innerText = mensaje;
+        document.getElementById('customModalBtnCancel').style.display = 'none';
+        const btnOk = document.getElementById('customModalBtnOk');
+        btnOk.className = "btn btn-inst w-100 py-2 fw-bold";
+        overlay.style.display = 'flex';
+        btnOk.onclick = () => {
+            overlay.style.display = 'none';
+            resolve(true);
+        };
+    });
+}
+
+function mostrarConfirmacion(mensaje) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('customModalOverlay');
+        document.getElementById('customModalMsg').innerText = mensaje;
+        const btnCancel = document.getElementById('customModalBtnCancel');
+        const btnOk = document.getElementById('customModalBtnOk');
+        btnCancel.style.display = 'block';
+        btnOk.className = "btn btn-inst w-50 py-2 fw-bold";
+        overlay.style.display = 'flex';
+        btnOk.onclick = () => {
+            overlay.style.display = 'none';
+            resolve(true);
+        };
+        btnCancel.onclick = () => {
+            overlay.style.display = 'none';
+            resolve(false);
+        };
+    });
+}
+
 // 2. MAPEO EXACTO DE ESTADOS A REGIONES
 const MAPA_ESTADO_REGION = {
     "CIUDAD DE MEXICO": "CO", "MEXICO": "CO", "ESTADO DE MEXICO": "CO", "MORELOS": "CO", "PUEBLA": "CO", "TLAXCALA": "CO",
@@ -135,23 +171,23 @@ async function cargarCatalogoSucursales() {
         }
     }
 }
-function buscarFolioSucursal() {
+
+async function buscarFolioSucursal() {
     const folioSuc = document.getElementById('folio_sucursal').value.trim();
-    if (!folioSuc) return alert("Ingresa un Folio de Sucursal para buscar.");
+    if (!folioSuc) return await mostrarAlerta("Ingresa un Folio de Sucursal para buscar.");
 
     const info = catalogoSucursales[folioSuc];
     if (!info) {
-        alert("⚠️ Folio no encontrado en el catálogo precargado. Verifica el número o llena los datos manualmente.");
+        await mostrarAlerta("⚠️ Folio no encontrado en el catálogo precargado. Verifica el número o llena los datos manualmente.");
         document.getElementById('folio_ct').readOnly = false;
         document.getElementById('direccion').readOnly = false;
         return;
     }
 
     if (info.revisado) {
-        const confirmar = confirm(`⚠️ Esta Sucursal (${folioSuc}) ya fue visitada el día ${info.ult_fecha} por ${info.ult_eot || "otro Enlace"}.\n\n¿Quieres registrar una nueva visita y actualizarla?`);
+        const confirmar = await mostrarConfirmacion(`⚠️ Esta Sucursal (${folioSuc}) ya fue visitada el día ${info.ult_fecha} por ${info.ult_eot || "otro Enlace"}.\n\n¿Quieres registrar una nueva visita y actualizarla?`);
         if (!confirmar) return;
     }
-
     document.getElementById('folio_ct').value = info.folio_ct || "";
     let edoLimpio = (info.entidad_suc || info.entidad || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
     
@@ -252,6 +288,7 @@ function rehabilitarPreguntas() {
     btnSubmit.innerText = "💾 GUARDAR Y ENVIAR CUESTIONARIO";
     validarCongruenciaP6();
 }
+
 // Regla anti-dedazos: Si P3, P4 o P5 es "NO", no permitir "EXCELENTE" en P6
 function validarCongruenciaP6() {
     if (killReasonGlobal !== "") return;
@@ -321,22 +358,22 @@ async function dispararSubidaAsincrona(e) {
         const region = document.getElementById('region_destino').value || "CO";
         const endpoint = ENDPOINTS_REGIONALES[region];
         const folioSuc = document.getElementById('folio_sucursal').value || "SINFOLIO";
-            const folioCt = document.getElementById('folio_ct').value || "SINFOLIOCT";
-            const nombreArchivo = `${folioCt}_${folioSuc}_${input.id}.jpg`;
+        const folioCt = document.getElementById('folio_ct').value || "SINFOLIOCT";
+        const nombreArchivo = `${folioCt}_${folioSuc}_${input.id}.jpg`;
 
-            if (!navigator.onLine || !endpoint.startsWith("http")) {
-                urlsArchivosSubidos[input.id] = base64;
-                badge.className = 'badge bg-info text-dark mt-2 d-block';
-                badge.innerText = '💾 Guardada en teléfono (Offline)';
-                liberarBoton();
-                return;
-            }
+        if (!navigator.onLine || !endpoint.startsWith("http")) {
+            urlsArchivosSubidos[input.id] = base64;
+            badge.className = 'badge bg-info text-dark mt-2 d-block';
+            badge.innerText = '💾 Guardada en teléfono (Offline)';
+            liberarBoton();
+            return;
+        }
 
-            const res = await fetch(endpoint, {
-                method: "POST",
-                headers: { "Content-Type": "text/plain;charset=utf-8" },
-                body: JSON.stringify({ action: "upload", base64: base64, filename: nombreArchivo, region: region })
-            });
+        const res = await fetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "text/plain;charset=utf-8" },
+            body: JSON.stringify({ action: "upload", base64: base64, filename: nombreArchivo, region: region })
+        });
         const data = await res.json();
 
         if (data.success) {
@@ -404,7 +441,7 @@ async function actualizarContadorCola() {
 }
 
 async function revisarPendientes() {
-    if (!navigator.onLine) return alert("Sigues sin señal. Intenta cuando tengas conexión.");
+    if (!navigator.onLine) return await mostrarAlerta("Sigues sin señal. Intenta cuando tengas conexión.");
     const db = await abrirDB();
     const tx = db.transaction(STORE_NAME, "readonly");
     const req = tx.objectStore(STORE_NAME).getAll();
@@ -436,11 +473,11 @@ async function revisarPendientes() {
 
 form.addEventListener('submit', async function(e) {
     e.preventDefault();
-    if (archivosEnProceso > 0) return alert("Espera a que terminen de procesarse las fotografías.");
+    if (archivosEnProceso > 0) return await mostrarAlerta("Espera a que terminen de procesarse las fotografías.");
 
     if (!form.checkValidity()) {
         form.classList.add('was-validated');
-        return alert("⚠️ Por favor completa todos los campos y fotografías obligatorias.");
+        return await mostrarAlerta("⚠️ Por favor completa todos los campos y fotografías obligatorias.");
     }
 
     const fd = new FormData(form);
@@ -470,7 +507,7 @@ form.addEventListener('submit', async function(e) {
 
     if (!navigator.onLine || !endpoint.startsWith("http")) {
         await guardarOffline(payload);
-        alert("💾 Guardado en el teléfono (Modo Offline). Se subirá al recuperar conexión.");
+        await mostrarAlerta("💾 Guardado en el teléfono (Modo Offline). Se subirá al recuperar conexión.");
         reiniciarFormulario();
         return;
     }
@@ -483,14 +520,14 @@ form.addEventListener('submit', async function(e) {
         });
         const data = await res.json();
         if (data.success) {
-            alert(`✅ Registro guardado exitosamente en la base regional (${region}).`);
+            await mostrarAlerta(`✅ Registro guardado exitosamente en la base regional (${region}).`);
             reiniciarFormulario();
         } else {
             throw new Error(data.message || "Error en servidor");
         }
     } catch (err) {
         await guardarOffline(payload);
-        alert("⚠️ Falló la red al enviar, pero tu registro quedó respaldado en el teléfono.");
+        await mostrarAlerta("⚠️ Falló la red al enviar, pero tu registro quedó respaldado en el teléfono.");
         reiniciarFormulario();
     }
 });
@@ -506,13 +543,14 @@ function reiniciarFormulario() {
     fijarTimestampInicio();
     btnSubmit.disabled = false;
 }
+
 // 8. FORZAR ACTUALIZACIÓN MANUAL DE CATÁLOGO
 async function forzarActualizacionCatalogo() {
     if (!navigator.onLine) {
-        return alert("Necesitas conexión a internet para descargar el catálogo.");
+        return await mostrarAlerta("Necesitas conexión a internet para descargar el catálogo.");
     }
     
-    const confirmar = confirm("¿Deseas descargar la versión más reciente del catálogo desde la base central?");
+    const confirmar = await mostrarConfirmacion("¿Deseas descargar la versión más reciente del catálogo desde la base central?");
     if (!confirmar) return;
 
     document.getElementById('bannerEstado').innerText = "⏳ Sincronizando catálogo fresco...";
@@ -536,11 +574,11 @@ async function forzarActualizacionCatalogo() {
             tx.objectStore(STORE_CATALOGO).put({ id: "base_maestra", datos: data });
             
             document.getElementById('bannerEstado').innerText = `Catálogo sincronizado hoy: ${fechaSinc} (${Object.keys(data).length} folios)`;
-            alert("Catálogo actualizado con éxito. Ya puedes buscar los folios recientes.");
+            await mostrarAlerta("✅ Catálogo actualizado con éxito. Ya puedes buscar los folios recientes.");
         }
     } catch (e) {
         console.error("Error al forzar actualización:", e);
-        alert("Hubo un error al forzar la descarga. Revisa tu conexión a internet.");
+        await mostrarAlerta("⚠️ Hubo un error al forzar la descarga. Revisa tu conexión a internet.");
         const fechaAntigua = localStorage.getItem('fecha_sinc_catalogo') || "Desconocida";
         document.getElementById('bannerEstado').innerText = `Catálogo cargado. Sincronizado: ${fechaAntigua} (${Object.keys(catalogoSucursales).length} folios)`;
     }
