@@ -1,10 +1,10 @@
 // 1. DICCIONARIO DE ENRUTAMIENTO POR REGIÓN
 const ENDPOINTS_REGIONALES = {
-    "CO": "https://docs.google.com/spreadsheets/d/1mJvdHBCF08Ff8MK3daAvZXBkKqTn796GpA8BFcVOe5o/edit?gid=0#gid=0",
-    "NC": "https://docs.google.com/spreadsheets/d/1AigZKnL4JNtDZyvpdVqXQI2aipcs43nemP_q_w6dUOU/edit?gid=0#gid=0",
-    "No": "https://docs.google.com/spreadsheets/d/1wWlx1H9AiVirsMiJMr1XsI6lUqawJC_JrvV8y4aYoMY/edit?gid=0#gid=0",
-    "PO": "https://docs.google.com/spreadsheets/d/11ONUxA1SZzYsuJ8LBxt9ck1X3_T6xpKzZNTkpe1ROnw/edit?gid=0#gid=0",
-    "Ss": "https://docs.google.com/spreadsheets/d/1Zj9x-pcYbCWNhgri9LMjiTxLzi45bHQOoW-VxqVmuF0/edit?gid=0#gid=0"
+    "CO": "https://script.google.com/macros/s/AKfycbyK5gnxiYeq1GbKn8plrEIHclCvbvHf72GiOUH7bYcMGsfezRvi-V8ZcpCWLlAQU3NJ/exec",
+    "NC": "https://script.google.com/macros/s/AKfycbzTuNV4BAV6XsbPq6rUZF10-0F2qyXC52JVbiFQ27m8ucoUBe_1eSGJmnHbyFPDkk1mWA/exec",
+    "No": "https://script.google.com/macros/s/AKfycbx4ocDFD6RxmCWZZ-N-fDhqu-3_pYGs02JF_h4p5aQUg5UEjbzLCEGAvlpkqejweqTq/exec",
+    "PO": "https://script.google.com/macros/s/AKfycbxm0ZMOjBm-8GQ2Jm8tM0OSf5r4BgV8J_p2a7ISxmnstm6lTUmejNvGi68wJs1lM1ad/exec",
+    "Ss": "https://script.google.com/macros/s/AKfycby4JJI4eIxAhFxU3M-FFPC4aP7BzvirbqQwy2WeYXFLIYJrCk_r28e7J0sNaH8yXDCH/exec"
 };
 
 // URL del Script conectado a Base_Central_Cuestionario_EOTS (para leer catálogo de folios)
@@ -310,21 +310,22 @@ async function dispararSubidaAsincrona(e) {
         const region = document.getElementById('region_destino').value || "CO";
         const endpoint = ENDPOINTS_REGIONALES[region];
         const folioSuc = document.getElementById('folio_sucursal').value || "SINFOLIO";
-        const nombreArchivo = `${region}_${folioSuc}_${input.id}_${Date.now()}.jpg`;
+            const folioCt = document.getElementById('folio_ct').value || "SINFOLIOCT";
+            const nombreArchivo = `${folioCt}_${folioSuc}_${input.id}.jpg`;
 
-        if (!navigator.onLine || !endpoint.startsWith("http")) {
-            urlsArchivosSubidos[input.id] = base64;
-            badge.className = 'badge bg-info text-dark mt-2 d-block';
-            badge.innerText = '💾 Guardada en teléfono (Offline)';
-            liberarBoton();
-            return;
-        }
+            if (!navigator.onLine || !endpoint.startsWith("http")) {
+                urlsArchivosSubidos[input.id] = base64;
+                badge.className = 'badge bg-info text-dark mt-2 d-block';
+                badge.innerText = '💾 Guardada en teléfono (Offline)';
+                liberarBoton();
+                return;
+            }
 
-        const res = await fetch(endpoint, {
-            method: "POST",
-            headers: { "Content-Type": "text/plain;charset=utf-8" },
-            body: JSON.stringify({ action: "upload", base64: base64, filename: nombreArchivo })
-        });
+            const res = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
+                body: JSON.stringify({ action: "upload", base64: base64, filename: nombreArchivo, region: region })
+            });
         const data = await res.json();
 
         if (data.success) {
