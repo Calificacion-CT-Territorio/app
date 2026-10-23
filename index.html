@@ -242,7 +242,18 @@
     </div>
     
     <div class="text-center mt-3 fw-bold" style="color: var(--gris); font-size: 0.85rem;">
-        Versión 1.6 | <span style="cursor:pointer; text-decoration:underline;" onclick="forzarActualizacionCatalogo()">↻ Forzar Sincronización</span>
+        Versión 1.7 | <span style="cursor:pointer; text-decoration:underline;" onclick="forzarActualizacionCatalogo()">↻ Forzar Sincronización</span>
+    </div>
+</div>
+
+<!-- MODAL INSTITUCIONAL (Reemplazo de alert y confirm nativos) -->
+<div id="customModalOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.65); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+    <div style="background:#fff; border-radius:12px; max-width:420px; width:100%; padding:24px; box-shadow:0 10px 25px rgba(0,0,0,0.4); border-top:6px solid var(--guinda); text-align:center;">
+        <div id="customModalMsg" style="font-size:1rem; color:#212529; margin-bottom:24px; white-space:pre-line; font-weight:600;"></div>
+        <div style="display:flex; gap:12px; justify-content:center;">
+            <button type="button" id="customModalBtnCancel" class="btn btn-secondary w-50 py-2 fw-bold" style="display:none;">Cancelar</button>
+            <button type="button" id="customModalBtnOk" class="btn btn-inst w-50 py-2 fw-bold">Aceptar</button>
+        </div>
     </div>
 </div>
 
