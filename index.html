@@ -37,7 +37,7 @@
         .section-disabled { opacity: 0.35; pointer-events: none; filter: grayscale(1); }
         .hidden-field { display: none; }
         #offline-alert { display: none; position: fixed; top: 38px; left: 0; width: 100%; z-index: 2000; border-radius: 0; margin: 0; background-color: var(--guinda); color: white; border: none; }
-        .queue-badge { position: fixed; top: 70px; right: 15px; z-index: 1000; display: none; background-color: var(--dorado); color: var(--oscuro); box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 0.85rem; padding: 8px 15px; border-radius: 8px; font-weight: 800; border: 2px solid var(--oscuro); cursor: pointer; }
+        .queue-badge { position: fixed; top: 48px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; z-index: 1000; display: none; background-color: var(--guinda); color: white; box-shadow: 0 4px 10px rgba(0,0,0,0.3); font-size: 0.9rem; padding: 10px 15px; border-radius: 8px; font-weight: 800; border: 2px solid white; cursor: pointer; text-align: center; }
         .timestamp-banner { background: var(--beige); border: 1px solid var(--dorado); color: var(--oscuro); padding: 8px; border-radius: 6px; font-weight: 700; text-align: center; font-size: 0.85rem; margin-bottom: 15px; }
     </style>
 </head>
@@ -242,7 +242,7 @@
     </div>
     
     <div class="text-center mt-3 fw-bold" style="color: var(--gris); font-size: 0.85rem;">
-        Versión 1.8 | <span style="cursor:pointer; text-decoration:underline;" onclick="forzarActualizacionCatalogo()">↻ Forzar Sincronización</span>
+        Versión 1.9 | <span style="cursor:pointer; text-decoration:underline;" onclick="forzarActualizacionCatalogo()">↻ Forzar Sincronización</span>
     </div>
 </div>
 
