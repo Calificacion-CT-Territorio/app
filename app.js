@@ -1,9 +1,9 @@
 // 1. DICCIONARIO DE ENRUTAMIENTO POR REGIÓN
 const ENDPOINTS_REGIONALES = {
     "CO": "https://script.google.com/macros/s/AKfycbyK5gnxiYeq1GbKn8plrEIHclCvbvHf72GiOUH7bYcMGsfezRvi-V8ZcpCWLlAQU3NJ/exec",
-    "NC": "https://script.google.com/macros/s/AKfycbzTuNV4BAV6XsbPq6rUZF10-0F2qyXC52JVbiFQ27m8ucoUBe_1eSGJmnHbyFPDkk1mWA/exec",
+    "NC": "https://script.google.com/macros/s/AKfycbxm0ZMOjBm-8GQ2Jm8tM0OSf5r4BgV8J_p2a7ISxmnstm6lTUmejNvGi68wJs1lM1ad/exec",
     "No": "https://script.google.com/macros/s/AKfycbx4ocDFD6RxmCWZZ-N-fDhqu-3_pYGs02JF_h4p5aQUg5UEjbzLCEGAvlpkqejweqTq/exec",
-    "PO": "https://script.google.com/macros/s/AKfycbxm0ZMOjBm-8GQ2Jm8tM0OSf5r4BgV8J_p2a7ISxmnstm6lTUmejNvGi68wJs1lM1ad/exec",
+    "PO": "https://script.google.com/macros/s/AKfycbzTuNV4BAV6XsbPq6rUZF10-0F2qyXC52JVbiFQ27m8ucoUBe_1eSGJmnHbyFPDkk1mWA/exec",
     "Ss": "https://script.google.com/macros/s/AKfycby4JJI4eIxAhFxU3M-FFPC4aP7BzvirbqQwy2WeYXFLIYJrCk_r28e7J0sNaH8yXDCH/exec"
 };
 
@@ -453,9 +453,9 @@ form.addEventListener('submit', async function(e) {
     const f_int1 = urlsArchivosSubidos['foto_interior_1'];
     const f_int2 = urlsArchivosSubidos['foto_interior_2'];
 
-    payload.foto_exterior = f_ext ? (f_ext.startsWith("http") ? `=HIPERVINCULO("${f_ext}", "VER_Fachada")` : f_ext) : "";
-    payload.foto_interior_1 = f_int1 ? (f_int1.startsWith("http") ? `=HIPERVINCULO("${f_int1}", "VER_Interior1")` : f_int1) : "";
-    payload.foto_interior_2 = f_int2 ? (f_int2.startsWith("http") ? `=HIPERVINCULO("${f_int2}", "VER_Interior2")` : f_int2) : "SIN SEGUNDA FOTO INTERIOR";
+    payload.foto_exterior = f_ext ? (f_ext.startsWith("http") ? `=HYPERLINK("${f_ext}", "VER_Fachada")` : f_ext) : "";
+    payload.foto_interior_1 = f_int1 ? (f_int1.startsWith("http") ? `=HYPERLINK("${f_int1}", "VER_Interior1")` : f_int1) : "";
+    payload.foto_interior_2 = f_int2 ? (f_int2.startsWith("http") ? `=HYPERLINK("${f_int2}", "VER_Interior2")` : f_int2) : "SIN SEGUNDA FOTO INTERIOR";
 
     const region = payload.region_destino || "CO";
     const endpoint = ENDPOINTS_REGIONALES[region];
