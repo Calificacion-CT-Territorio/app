@@ -100,19 +100,27 @@ async function cargarCatalogoSucursales() {
 
     if (navigator.onLine && URL_CATALOGO_CENTRAL.startsWith("http")) {
         try {
-            const res = await fetch(URL_CATALOGO_CENTRAL + "?action=getCatalogo");
+            // Parámetros estrictos para forzar redirección de Google y evitar caché de errores
+            const res = await fetch(URL_CATALOGO_CENTRAL + "?action=getCatalogo", {
+                method: "GET",
+                redirect: "follow",
+                cache: "no-store" 
+            });
+            
+            if (!res.ok) throw new Error("Fallo HTTP: " + res.status);
+            
             const data = await res.json();
-            if (data && !data.error) {
+            if (data && Object.keys(data).length > 0) {
                 catalogoSucursales = data;
                 localStorage.setItem('catalogo_sucursales_eot', JSON.stringify(data));
                 document.getElementById('bannerEstado').innerText = `Catálogo sincronizado (${Object.keys(data).length} folios listos para uso offline)`;
             }
         } catch (e) {
-            console.warn("Usando catálogo en caché local.");
+            console.error("Error de red al descargar catálogo:", e);
+            document.getElementById('bannerEstado').innerText = "⚠️ Error de red. Usando catálogo offline.";
         }
     }
 }
-
 function buscarFolioSucursal() {
     const folioSuc = document.getElementById('folio_sucursal').value.trim();
     if (!folioSuc) return alert("Ingresa un Folio de Sucursal para buscar.");
