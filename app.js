@@ -506,3 +506,42 @@ function reiniciarFormulario() {
     fijarTimestampInicio();
     btnSubmit.disabled = false;
 }
+// 8. FORZAR ACTUALIZACIÓN MANUAL DE CATÁLOGO
+async function forzarActualizacionCatalogo() {
+    if (!navigator.onLine) {
+        return alert("Necesitas conexión a internet para descargar el catálogo.");
+    }
+    
+    const confirmar = confirm("¿Deseas descargar la versión más reciente del catálogo desde la base central?");
+    if (!confirmar) return;
+
+    document.getElementById('bannerEstado').innerText = "⏳ Sincronizando catálogo fresco...";
+    
+    try {
+        // El parámetro &t=Date.now() rompe el caché zombi de Google Apps Script
+        const res = await fetch(URL_CATALOGO_CENTRAL + "?action=getCatalogo&t=" + Date.now(), {
+            method: "GET", redirect: "follow", cache: "no-store" 
+        });
+        
+        if (!res.ok) throw new Error("Fallo HTTP: " + res.status);
+        
+        const data = await res.json();
+        if (data && Object.keys(data).length > 0) {
+            catalogoSucursales = data;
+            const fechaSinc = new Date().toLocaleString('es-MX');
+            localStorage.setItem('fecha_sinc_catalogo', fechaSinc);
+            
+            const db = await abrirDB();
+            const tx = db.transaction(STORE_CATALOGO, "readwrite");
+            tx.objectStore(STORE_CATALOGO).put({ id: "base_maestra", datos: data });
+            
+            document.getElementById('bannerEstado').innerText = `Catálogo sincronizado hoy: ${fechaSinc} (${Object.keys(data).length} folios)`;
+            alert("Catálogo actualizado con éxito. Ya puedes buscar los folios recientes.");
+        }
+    } catch (e) {
+        console.error("Error al forzar actualización:", e);
+        alert("Hubo un error al forzar la descarga. Revisa tu conexión a internet.");
+        const fechaAntigua = localStorage.getItem('fecha_sinc_catalogo') || "Desconocida";
+        document.getElementById('bannerEstado').innerText = `Catálogo cargado. Sincronizado: ${fechaAntigua} (${Object.keys(catalogoSucursales).length} folios)`;
+    }
+}
