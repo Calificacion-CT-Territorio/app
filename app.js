@@ -240,8 +240,8 @@ function rehabilitarPreguntas() {
         if (!box) return;
         box.classList.remove('section-disabled');
         const sel = box.querySelector('select');
-        if (sel && sel.id !== "p2_1_continua") {
-            sel.required = true;
+        if (sel) {
+            if (sel.id !== "p2_1_continua") sel.required = true;
             // Eliminar físicamente cualquier opción que empiece con "CERRADO"
             Array.from(sel.options).forEach(opt => {
                 if (opt.value.startsWith("CERRADO POR")) sel.remove(opt.index);
