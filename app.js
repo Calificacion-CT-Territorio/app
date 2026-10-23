@@ -153,7 +153,12 @@ function buscarFolioSucursal() {
     }
 
     document.getElementById('folio_ct').value = info.folio_ct || "";
-    const edoLimpio = (info.entidad_suc || info.entidad || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    let edoLimpio = (info.entidad_suc || info.entidad || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+    
+    // Homologación de nombres largos de la base a nombres cortos de la app
+    if (edoLimpio === "COAHUILA DE ZARAGOZA") edoLimpio = "COAHUILA";
+    if (edoLimpio === "VERACRUZ DE IGNACIO DE LA LLAVE") edoLimpio = "VERACRUZ";
+    if (edoLimpio === "MICHOACAN DE OCAMPO") edoLimpio = "MICHOACAN";
     
     const selEdo = document.getElementById('estado_ct');
     if (Array.from(selEdo.options).some(o => o.value === edoLimpio)) {
