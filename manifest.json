@@ -1,0 +1,15 @@
+{
+  "name": "Calificación CT en Territorio",
+  "short_name": "Calificación CT",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#f6f3ee",
+  "theme_color": "#611232",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/684/684908.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
