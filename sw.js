@@ -1,4 +1,4 @@
-const CACHE_NAME = 'calificacion-ct-v4';
+const CACHE_NAME = 'calificacion-ct-v1.1';
 const ASSETS = [
   './',
   './index.html',
