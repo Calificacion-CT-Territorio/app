@@ -103,7 +103,8 @@ async function cargarCatalogoSucursales() {
         req.onsuccess = () => {
             if (req.result && req.result.datos) {
                 catalogoSucursales = req.result.datos;
-                document.getElementById('bannerEstado').innerText = `Catálogo offline cargado (${Object.keys(catalogoSucursales).length} folios)`;
+                const fechaSinc = localStorage.getItem('fecha_sinc_catalogo') || "Desconocida";
+                document.getElementById('bannerEstado').innerText = `Catálogo cargado. Sincronizado: ${fechaSinc} (${Object.keys(catalogoSucursales).length} folios)`;
             }
         };
     } catch (e) { console.warn("No hay catálogo local previo."); }
@@ -119,13 +120,15 @@ async function cargarCatalogoSucursales() {
             const data = await res.json();
             if (data && Object.keys(data).length > 0) {
                 catalogoSucursales = data;
+                const fechaSinc = new Date().toLocaleString('es-MX');
+                localStorage.setItem('fecha_sinc_catalogo', fechaSinc);
                 
                 // Guardar el catálogo gigante en IndexedDB sin chocar con los límites
                 const db = await abrirDB();
                 const tx = db.transaction(STORE_CATALOGO, "readwrite");
                 tx.objectStore(STORE_CATALOGO).put({ id: "base_maestra", datos: data });
                 
-                document.getElementById('bannerEstado').innerText = `Catálogo sincronizado (${Object.keys(data).length} folios listos para uso offline)`;
+                document.getElementById('bannerEstado').innerText = `Catálogo sincronizado hoy: ${fechaSinc} (${Object.keys(data).length} folios)`;
             }
         } catch (e) {
             console.error("Error de red al descargar catálogo:", e);
@@ -443,9 +446,13 @@ form.addEventListener('submit', async function(e) {
         payload[id] = document.getElementById(id).value || "-";
     });
 
-    payload.foto_exterior = urlsArchivosSubidos['foto_exterior'] || "";
-    payload.foto_interior_1 = urlsArchivosSubidos['foto_interior_1'] || "";
-    payload.foto_interior_2 = urlsArchivosSubidos['foto_interior_2'] || "SIN SEGUNDA FOTO INTERIOR";
+    const f_ext = urlsArchivosSubidos['foto_exterior'];
+    const f_int1 = urlsArchivosSubidos['foto_interior_1'];
+    const f_int2 = urlsArchivosSubidos['foto_interior_2'];
+
+    payload.foto_exterior = f_ext ? (f_ext.startsWith("http") ? `=HIPERVINCULO("${f_ext}", "VER_Fachada")` : f_ext) : "";
+    payload.foto_interior_1 = f_int1 ? (f_int1.startsWith("http") ? `=HIPERVINCULO("${f_int1}", "VER_Interior1")` : f_int1) : "";
+    payload.foto_interior_2 = f_int2 ? (f_int2.startsWith("http") ? `=HIPERVINCULO("${f_int2}", "VER_Interior2")` : f_int2) : "SIN SEGUNDA FOTO INTERIOR";
 
     const region = payload.region_destino || "CO";
     const endpoint = ENDPOINTS_REGIONALES[region];
