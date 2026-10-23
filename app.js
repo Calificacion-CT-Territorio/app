@@ -148,7 +148,7 @@ function buscarFolioSucursal() {
     }
 
     if (info.revisado) {
-        const confirmar = confirm(`⚠️ El folio ${folioSuc} ya fue registrado anteriormente. ¿Deseas enviar una nueva actualización?`);
+        const confirmar = confirm(`⚠️ Esta Sucursal (${folioSuc}) ya fue visitada el día ${info.ult_fecha} por ${info.ult_eot || "otro Enlace"}.\n\n¿Quieres registrar una nueva visita y actualizarla?`);
         if (!confirmar) return;
     }
 
