@@ -237,13 +237,16 @@ function rehabilitarPreguntas() {
         const sel = box.querySelector('select');
         if (sel && sel.id !== "p2_1_continua") {
             sel.required = true;
+            // Eliminar físicamente cualquier opción que empiece con "CERRADO"
+            Array.from(sel.options).forEach(opt => {
+                if (opt.value.startsWith("CERRADO POR")) sel.remove(opt.index);
+            });
             if (sel.value.startsWith("CERRADO POR")) sel.value = "";
         }
     });
     btnSubmit.innerText = "💾 GUARDAR Y ENVIAR CUESTIONARIO";
     validarCongruenciaP6();
 }
-
 // Regla anti-dedazos: Si P3, P4 o P5 es "NO", no permitir "EXCELENTE" en P6
 function validarCongruenciaP6() {
     if (killReasonGlobal !== "") return;
