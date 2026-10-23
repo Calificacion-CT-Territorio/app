@@ -8,7 +8,7 @@ const ENDPOINTS_REGIONALES = {
 };
 
 // URL del Script conectado a Base_Central_Cuestionario_EOTS (para leer catálogo de folios)
-const URL_CATALOGO_CENTRAL = "https://docs.google.com/spreadsheets/d/1KvJK3NV251GplDGmXbRZIIPhu6iv9ANh8Rtcja5VGMk/edit?gid=0#gid=0";
+const URL_CATALOGO_CENTRAL = "https://script.google.com/macros/s/AKfycbyyzE4zDAMz4qWNUUxmFdLZ5zCZmdwFllKML-grfPTudWkDFTcttqPYJAn3aPsVarTR/exec";
 
 // 2. MAPEO EXACTO DE ESTADOS A REGIONES
 const MAPA_ESTADO_REGION = {
