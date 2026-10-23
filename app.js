@@ -95,29 +95,40 @@ function asignarRegionPorEstado() {
 
 // 3. BÚSQUEDA DE FOLIO Y AUTOCOMPLETADO
 async function cargarCatalogoSucursales() {
-    const backup = localStorage.getItem('catalogo_sucursales_eot');
-    if (backup) catalogoSucursales = JSON.parse(backup);
+    // 1. Intentar leer la base maestra desde IndexedDB primero
+    try {
+        const db = await abrirDB();
+        const tx = db.transaction(STORE_CATALOGO, "readonly");
+        const req = tx.objectStore(STORE_CATALOGO).get("base_maestra");
+        req.onsuccess = () => {
+            if (req.result && req.result.datos) {
+                catalogoSucursales = req.result.datos;
+                document.getElementById('bannerEstado').innerText = `Catálogo offline cargado (${Object.keys(catalogoSucursales).length} folios)`;
+            }
+        };
+    } catch (e) { console.warn("No hay catálogo local previo."); }
 
+    // 2. Si hay internet, descargar la versión más fresca
     if (navigator.onLine && URL_CATALOGO_CENTRAL.startsWith("http")) {
         try {
-            // Parámetros estrictos para forzar redirección de Google y evitar caché de errores
             const res = await fetch(URL_CATALOGO_CENTRAL + "?action=getCatalogo", {
-                method: "GET",
-                redirect: "follow",
-                cache: "no-store" 
+                method: "GET", redirect: "follow", cache: "no-store" 
             });
-            
             if (!res.ok) throw new Error("Fallo HTTP: " + res.status);
             
             const data = await res.json();
             if (data && Object.keys(data).length > 0) {
                 catalogoSucursales = data;
-                localStorage.setItem('catalogo_sucursales_eot', JSON.stringify(data));
+                
+                // Guardar el catálogo gigante en IndexedDB sin chocar con los límites
+                const db = await abrirDB();
+                const tx = db.transaction(STORE_CATALOGO, "readwrite");
+                tx.objectStore(STORE_CATALOGO).put({ id: "base_maestra", datos: data });
+                
                 document.getElementById('bannerEstado').innerText = `Catálogo sincronizado (${Object.keys(data).length} folios listos para uso offline)`;
             }
         } catch (e) {
             console.error("Error de red al descargar catálogo:", e);
-            document.getElementById('bannerEstado').innerText = "⚠️ Error de red. Usando catálogo offline.";
         }
     }
 }
@@ -341,14 +352,18 @@ function liberarBoton() {
 // 6. ENVÍO Y BASE DE DATOS LOCAL (INDEXEDDB)
 const DB_NAME = "CalificacionCT_DB";
 const STORE_NAME = "cola_envios";
+const STORE_CATALOGO = "catalogo_offline";
 
 function abrirDB() {
     return new Promise((resolve, reject) => {
-        const req = indexedDB.open(DB_NAME, 1);
+        const req = indexedDB.open(DB_NAME, 2); // Subimos versión a 2 para agregar catálogo
         req.onupgradeneeded = e => {
             const db = e.target.result;
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 db.createObjectStore(STORE_NAME, { keyPath: "id_local" });
+            }
+            if (!db.objectStoreNames.contains(STORE_CATALOGO)) {
+                db.createObjectStore(STORE_CATALOGO, { keyPath: "id" });
             }
         };
         req.onsuccess = () => resolve(req.result);
