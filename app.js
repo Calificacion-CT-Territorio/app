@@ -68,6 +68,7 @@ let catalogoSucursales = {};
 let urlsArchivosSubidos = {};
 let archivosEnProceso = 0;
 let killReasonGlobal = "";
+let isSyncing = false;
 const form = document.getElementById('formCT');
 const btnSubmit = document.getElementById('btnSubmit');
 
@@ -441,7 +442,9 @@ async function actualizarContadorCola() {
 }
 
 async function revisarPendientes() {
+    if (isSyncing) return;
     if (!navigator.onLine) return await mostrarAlerta("Sigues sin señal. Intenta cuando tengas conexión.");
+    
     const db = await abrirDB();
     const tx = db.transaction(STORE_NAME, "readonly");
     const req = tx.objectStore(STORE_NAME).getAll();
@@ -449,6 +452,13 @@ async function revisarPendientes() {
     req.onsuccess = async () => {
         const pendientes = req.result;
         if (pendientes.length === 0) return;
+
+        isSyncing = true;
+        const badge = document.getElementById('badgeQueue');
+        const originalHTML = badge.innerHTML;
+        badge.innerHTML = "⏳ Sincronizando, por favor espera...";
+        badge.style.pointerEvents = "none";
+        badge.style.opacity = "0.7";
 
         let sincronizados = 0;
         document.getElementById('bannerEstado').innerText = "⏳ Sincronizando registros pendientes...";
@@ -498,6 +508,12 @@ async function revisarPendientes() {
                 }
             } catch (e) { break; }
         }
+        
+        badge.innerHTML = originalHTML;
+        badge.style.pointerEvents = "auto";
+        badge.style.opacity = "1";
+        isSyncing = false;
+        
         actualizarContadorCola();
         if (sincronizados > 0) {
             fijarTimestampInicio();
