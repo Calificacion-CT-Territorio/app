@@ -450,10 +450,40 @@ async function revisarPendientes() {
         const pendientes = req.result;
         if (pendientes.length === 0) return;
 
+        let sincronizados = 0;
+        document.getElementById('bannerEstado').innerText = "⏳ Sincronizando registros pendientes...";
+
         for (const item of pendientes) {
             const endpoint = ENDPOINTS_REGIONALES[item.region_destino] || ENDPOINTS_REGIONALES["CO"];
             if (!endpoint.startsWith("http")) continue;
             try {
+                // 1. Detectar y subir fotos que se quedaron en modo offline (base64)
+                const fotos = [
+                    { clave: 'foto_exterior', nombre: 'VER_Fachada' },
+                    { clave: 'foto_interior_1', nombre: 'VER_Interior1' },
+                    { clave: 'foto_interior_2', nombre: 'VER_Interior2' }
+                ];
+
+                for (const f of fotos) {
+                    let fotoData = item[f.clave];
+                    if (fotoData && fotoData.startsWith("data:image")) {
+                        const folioSuc = item.folio_sucursal || "SINFOLIO";
+                        const folioCt = item.folio_ct || "SINFOLIOCT";
+                        const nombreArchivo = `${folioCt}_${folioSuc}_${f.clave}.jpg`;
+
+                        const resUpload = await fetch(endpoint, {
+                            method: "POST",
+                            headers: { "Content-Type": "text/plain;charset=utf-8" },
+                            body: JSON.stringify({ action: "upload", base64: fotoData, filename: nombreArchivo, region: item.region_destino })
+                        });
+                        const dataUpload = await resUpload.json();
+                        if (dataUpload.success) {
+                            item[f.clave] = `=HYPERLINK("${dataUpload.url}", "${f.nombre}")`;
+                        }
+                    }
+                }
+
+                // 2. Enviar cuestionario ya formateado
                 const res = await fetch(endpoint, {
                     method: "POST",
                     headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -464,10 +494,15 @@ async function revisarPendientes() {
                     const dbDel = await abrirDB();
                     const txDel = dbDel.transaction(STORE_NAME, "readwrite");
                     txDel.objectStore(STORE_NAME).delete(item.id_local);
+                    sincronizados++;
                 }
             } catch (e) { break; }
         }
         actualizarContadorCola();
+        if (sincronizados > 0) {
+            fijarTimestampInicio();
+            await mostrarAlerta(`✅ Sincronización exitosa: ${sincronizados} registro(s) subido(s) con sus fotografías a Drive.`);
+        }
     };
 }
 
