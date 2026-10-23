@@ -196,6 +196,7 @@ async function buscarFolioSucursal() {
     if (edoLimpio === "COAHUILA DE ZARAGOZA") edoLimpio = "COAHUILA";
     if (edoLimpio === "VERACRUZ DE IGNACIO DE LA LLAVE") edoLimpio = "VERACRUZ";
     if (edoLimpio === "MICHOACAN DE OCAMPO") edoLimpio = "MICHOACAN";
+    if (edoLimpio === "MEXICO") edoLimpio = "ESTADO DE MEXICO";
     
     const selEdo = document.getElementById('estado_ct');
     if (Array.from(selEdo.options).some(o => o.value === edoLimpio)) {
